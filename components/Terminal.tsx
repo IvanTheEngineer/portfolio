@@ -46,6 +46,7 @@ export const Terminal: React.FC = () => {
   const pathRef = useRef(currentPath);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const hasBooted = useRef(false);
 
   // Sync Ref with State
   useEffect(() => {
@@ -133,10 +134,10 @@ export const Terminal: React.FC = () => {
                <div onClick={() => handleItemClick("Projects", "dir")} className="text-cyan-300 hover:text-cyan-200 cursor-pointer transition-colors font-bold">Projects/</div>
                <div onClick={() => handleItemClick("AI_Chat", "dir")} className="text-purple-400 hover:text-purple-300 cursor-pointer transition-colors font-bold">AI_Chat/</div>
                
-               <div onClick={() => handleItemClick("AboutMe.txt", "file")} className="text-slate-200 hover:text-white cursor-pointer transition-colors">AboutMe.txt</div>
+               <div onClick={() => handleItemClick("AboutMe.md", "file")} className="text-slate-200 hover:text-white cursor-pointer transition-colors">AboutMe.md</div>
                <div onClick={() => handleItemClick("Education.md", "file")} className="text-slate-200 hover:text-white cursor-pointer transition-colors">Education.md</div>
                <div onClick={() => handleItemClick("Skills.md", "file")} className="text-slate-200 hover:text-white cursor-pointer transition-colors">Skills.md</div>
-               <div className="text-slate-200 opacity-50">resume.pdf</div>
+               <div onClick={() => handleItemClick("resume.pdf", "file")} className="text-slate-200 hover:text-white cursor-pointer transition-colors">resume.pdf</div>
                <div className="text-green-400 font-bold opacity-80">intro.sh*</div>
             </div>
           );
@@ -210,8 +211,37 @@ export const Terminal: React.FC = () => {
 
         // Check root files first if we are in root
         if (effectivePath === '~/Portfolio') {
-            if (cleanFile === 'AboutMe.txt') {
-            output = <div className="max-w-xl text-slate-300 leading-relaxed whitespace-pre-wrap">{PORTFOLIO_DATA.about}</div>;
+            if (cleanFile === 'AboutMe.md') {
+            output = (
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-4 p-4 bg-slate-900/50 rounded-lg border border-slate-800">
+                  <img 
+                    src="/static/ENG_Ivan_Kisselev.jpg" 
+                    alt="Ivan Kisselev" 
+                    className="w-32 h-32 rounded-full object-cover border-4 border-cyan-500/20 shadow-xl"
+                  />
+                  <div className="flex-1 text-center sm:text-left">
+                    <h2 className="text-2xl font-bold text-cyan-400 mb-2">{PORTFOLIO_DATA.name}</h2>
+                    <div className="text-slate-300 text-sm leading-relaxed mb-4">
+                        {PORTFOLIO_DATA.about.split('\n').map((line, i) => (
+                            <div key={i} className="min-h-[1.2em]">
+                                {line.split(' ').map((word, j) => {
+                                    if (word.includes('github.com') || word.includes('linkedin.com')) {
+                                        const url = word.startsWith('http') ? word : `https://${word}`;
+                                        return <a key={j} href={url} target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline cursor-pointer">{word} </a>
+                                    }
+                                    if (word.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+                                        return <a key={j} href={`mailto:${word}`} className="text-cyan-400 hover:underline cursor-pointer">{word} </a>
+                                    }
+                                    return <span key={j}>{word} </span>
+                                })}
+                            </div>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
             } else if (cleanFile === 'Education.md') {
             output = (
                 <div className="space-y-6">
@@ -239,7 +269,13 @@ export const Terminal: React.FC = () => {
                 </div>
             );
             } else if (cleanFile === 'resume.pdf') {
-            output = <div className="text-slate-400 italic">Opening resume.pdf... (Simulated)</div>
+            window.open('/static/Resume - Ivan Kisselev.pdf', '_blank');
+            output = (
+                <div className="text-green-400 flex items-center gap-2">
+                    <span>✓</span> 
+                    <span>Opening resume.pdf in new tab...</span>
+                </div>
+            );
             }
         }
         
@@ -336,7 +372,7 @@ export const Terminal: React.FC = () => {
               {PORTFOLIO_DATA.asciiArt}
             </pre>
             <div className="text-slate-300">Welcome to My Interactive Portfolio.</div>
-            <div className="text-slate-500 text-xs mt-1">Type 'ls' to view files, or click on items to navigate.</div>
+            <div className="text-slate-500 text-xs mt-1">Type 'ls' to view files, 'cd' to change directories, or click on items to navigate.</div>
           </div>
         ), effectivePath);
         break;
@@ -372,6 +408,7 @@ export const Terminal: React.FC = () => {
 
        await typeCommand(command);
        addToHistory('command', command, current); 
+       setInput(''); // Clear input after typing command
        
        setCurrentPath(targetPath);
        
@@ -433,6 +470,9 @@ export const Terminal: React.FC = () => {
 
   // Initial Boot Sequence
   useEffect(() => {
+    if (hasBooted.current) return;
+    hasBooted.current = true;
+
     const boot = async () => {
       setHistory([{
         id: 'boot',
