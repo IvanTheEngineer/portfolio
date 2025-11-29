@@ -1,0 +1,5 @@
+{
+  "name": "Terminal Portfolio",
+  "description": "A macOS terminal-themed interactive portfolio featuring simulated file system navigation and Gemini AI integration.",
+  "requestFramePermissions": []
+}
