@@ -132,13 +132,13 @@ export const Terminal: React.FC = () => {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 cursor-default text-sm">
                <div onClick={() => handleItemClick("Experience", "dir")} className="text-cyan-300 hover:text-cyan-200 cursor-pointer transition-colors font-bold">Experience/</div>
                <div onClick={() => handleItemClick("Projects", "dir")} className="text-cyan-300 hover:text-cyan-200 cursor-pointer transition-colors font-bold">Projects/</div>
-               <div onClick={() => handleItemClick("AI_Chat", "dir")} className="text-purple-400 hover:text-purple-300 cursor-pointer transition-colors font-bold">AI_Chat/</div>
+               <div onClick={() => handleItemClick("AI_Chat.md", "file")} className="text-purple-400 hover:text-purple-300 cursor-pointer transition-colors font-bold">AI_Chat.md</div>
                
                <div onClick={() => handleItemClick("AboutMe.md", "file")} className="text-slate-200 hover:text-white cursor-pointer transition-colors">AboutMe.md</div>
                <div onClick={() => handleItemClick("Education.md", "file")} className="text-slate-200 hover:text-white cursor-pointer transition-colors">Education.md</div>
                <div onClick={() => handleItemClick("Skills.md", "file")} className="text-slate-200 hover:text-white cursor-pointer transition-colors">Skills.md</div>
                <div onClick={() => handleItemClick("resume.pdf", "file")} className="text-slate-200 hover:text-white cursor-pointer transition-colors">resume.pdf</div>
-               <div className="text-green-400 font-bold opacity-80">intro.sh*</div>
+               <div onClick={() => handleItemClick("./intro", "exec")} className="text-green-400 font-bold opacity-80 cursor-pointer hover:text-green-300 transition-colors">intro.sh*</div>
             </div>
           );
         } else if (effectivePath === '~/Portfolio/Projects') {
@@ -167,10 +167,6 @@ export const Terminal: React.FC = () => {
               })}
             </div>
            )
-        } else if (effectivePath.includes('AI_Chat')) {
-             content = (
-               <div className="text-slate-400 italic">Virtual environment active. Type 'ai [question]' to interact.</div>
-             )
         } else {
            content = <div className="text-slate-400">Total 0</div>;
         }
@@ -191,7 +187,7 @@ export const Terminal: React.FC = () => {
           setCurrentPath('~/Portfolio');
         } else {
            const cleanTarget = target.replace(/"/g, '').replace('/', '');
-           if (effectivePath === '~/Portfolio' && (cleanTarget === 'Projects' || cleanTarget === 'Experience' || cleanTarget === 'AI_Chat')) {
+           if (effectivePath === '~/Portfolio' && (cleanTarget === 'Projects' || cleanTarget === 'Experience')) {
              setCurrentPath(`${effectivePath}/${cleanTarget}`);
            } else {
              addToHistory('output', <span className="text-red-400">cd: no such file or directory: {target}</span>, effectivePath);
@@ -269,13 +265,20 @@ export const Terminal: React.FC = () => {
                 </div>
             );
             } else if (cleanFile === 'resume.pdf') {
-            window.open('resume.pdf', '_blank');
+            window.open('/static/resume.pdf', '_blank');
             output = (
                 <div className="text-green-400 flex items-center gap-2">
                     <span>✓</span> 
                     <span>Opening resume.pdf in new tab...</span>
                 </div>
             );
+            } else if (cleanFile === 'AI_Chat.md') {
+                output = (
+                    <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded text-purple-200 mt-2">
+                        <div className="font-bold mb-1">✨ AI Assistant Active</div>
+                        <div className="text-sm opacity-80">Type <code className="bg-black/30 px-1 rounded">ai "your question"</code> to ask about my resume, skills, or projects.</div>
+                    </div>
+                );
             }
         }
         
@@ -384,14 +387,14 @@ export const Terminal: React.FC = () => {
     setInput('');
   };
 
-  const handleItemClick = async (name: string, type: 'file' | 'dir') => {
+  const handleItemClick = async (name: string, type: 'file' | 'dir' | 'exec') => {
     // CRITICAL FIX: Read current path from Ref to avoid stale closures in onClick handlers
     const current = pathRef.current;
     
     if (isTyping) return;
     
     if (type === 'dir') {
-       const rootSubdirs = ['Experience', 'Projects', 'AI_Chat'];
+       const rootSubdirs = ['Experience', 'Projects'];
        let command = `cd ${name}`;
        let targetPath = `${current}/${name}`;
 
@@ -412,19 +415,15 @@ export const Terminal: React.FC = () => {
        
        setCurrentPath(targetPath);
        
-       if (name === 'AI_Chat') {
-           addToHistory('output', (
-             <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded text-purple-200 mt-2">
-               <div className="font-bold mb-1">✨ AI Assistant Active</div>
-               <div className="text-sm opacity-80">Type <code className="bg-black/30 px-1 rounded">ai "your question"</code> to ask about my resume, skills, or projects.</div>
-             </div>
-           ), targetPath);
-       } else {
-         // Explicitly show 'ls' command in history, then execute it
-         addToHistory('command', 'ls', targetPath);
-         await executeCommand('ls', false, targetPath);
-       }
+       // Explicitly show 'ls' command in history, then execute it
+       addToHistory('command', 'ls', targetPath);
+       await executeCommand('ls', false, targetPath);
 
+    } else if (type === 'exec') {
+       const cmd = name;
+       await typeCommand(cmd);
+       addToHistory('command', cmd, current);
+       executeCommand(cmd, false, current);
     } else {
        const cmd = `cat ${name}`;
        await typeCommand(cmd);
