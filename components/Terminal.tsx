@@ -265,7 +265,7 @@ export const Terminal: React.FC = () => {
                 </div>
             );
             } else if (cleanFile === 'resume.pdf') {
-            window.open('/static/resume.pdf', '_blank');
+            window.open('/resume.pdf', '_blank');
             output = (
                 <div className="text-green-400 flex items-center gap-2">
                     <span>✓</span> 
