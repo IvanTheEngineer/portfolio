@@ -216,7 +216,7 @@ export const Terminal: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-4 p-4 bg-slate-900/50 rounded-lg border border-slate-800">
                   <img 
-                    src="/static/ENG_Ivan_Kisselev.jpg" 
+                    src="/ENG_Ivan_Kisselev.jpg" 
                     alt="Ivan Kisselev" 
                     className="w-32 h-32 rounded-full object-cover border-4 border-cyan-500/20 shadow-xl"
                   />
@@ -269,7 +269,7 @@ export const Terminal: React.FC = () => {
                 </div>
             );
             } else if (cleanFile === 'resume.pdf') {
-            window.open('/static/Resume - Ivan Kisselev.pdf', '_blank');
+            window.open('resume.pdf', '_blank');
             output = (
                 <div className="text-green-400 flex items-center gap-2">
                     <span>✓</span> 
