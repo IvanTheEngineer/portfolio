@@ -375,7 +375,7 @@ export const Terminal: React.FC = () => {
               {PORTFOLIO_DATA.asciiArt}
             </pre>
             <div className="text-slate-300">Welcome to My Interactive Portfolio.</div>
-            <div className="text-slate-500 text-xs mt-1">Type 'ls' to view files, 'cd' to change directories, or click on items to navigate.</div>
+            <div className="text-slate-500 text-xs mt-1">Type 'ls' to view files. Type a command or click on items to navigate. Type 'help' to see all commands.</div>
           </div>
         ), effectivePath);
         break;
